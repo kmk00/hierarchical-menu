@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script>
+      const createCategories = (data) => {
+        const categories = new Set();
+        const allCategories = data.forEach((item) => {
+          categories.add(item.cat);
+        });
+        return Array.from(categories);
+      };
+
+      const fetchedData = async () => {
+        const response = await fetch(
+          "https://neodigm.github.io/FED_Programming_Challenge/products.json"
+        );
+        const data = await response.json();
+
+        const menu = document.querySelector(".menu");
+        const categories = createCategories(data);
+
+        categories.forEach((item) => {
+          const menuCategory = document.createElement("li");
+          menuCategory.classList.add("menu__category");
+
+          const menuItems = document.createElement("p");
+          menuItems.classList.add("menu__title");
+          menuItems.textContent = item;
+
+          menu.append(menuCategory);
+          menuCategory.append(menuItems);
+
+          const menuList = document.createElement("ul");
+          menuList.classList.add("menu__list");
+          menuCategory.append(menuList);
+
+          data.forEach((product) => {
+            if (product.cat === item) {
+              const listItem = document.createElement("li");
+              listItem.classList.add("item");
+
+              const listItemTitle = document.createElement("p");
+              listItemTitle.classList.add("item__title");
+              listItemTitle.textContent = product.product;
+
+              const heart = document.createElement("img");
+              heart.src = "/heart.svg";
+              heart.alt = "heart";
+              heart.style.display = "none";
+
+              const favorities = JSON.parse(
+                localStorage.getItem("favorities") || "[]"
+              );
+
+              if (favorities.some((fav) => fav.product === product.product)) {
+                heart.style.display = "block";
+              }
+
+              listItem.addEventListener("click", () => {
+                const favorities = JSON.parse(
+                  localStorage.getItem("favorities") || "[]"
+                );
+
+                const productIndex = favorities.findIndex(
+                  (fav) => fav.product === product.product
+                );
+
+                if (productIndex !== -1) {
+                  favorities.splice(productIndex, 1);
+                  heart.style.display = "none";
+                } else {
+                  favorities.push(product);
+                  heart.style.display = "block";
+                }
+
+                localStorage.setItem("favorities", JSON.stringify(favorities));
+              });
+
+              const listItemPrice = document.createElement("p");
+              listItemPrice.classList.add("item__price");
+              listItemPrice.textContent = `${product.price}$`;
+
+              listItem.append(listItemTitle, listItemPrice, heart);
+
+              menuList.append(listItem);
+            }
+          });
+        });
+      };
+
+      fetchedData();
+    </script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
+          "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+      }
+
+      li,
+      ul {
+        list-style-type: none;
+      }
+
+      h1 {
+        text-align: center;
+        font-size: 3rem;
+      }
+
+      .menu {
+        display: grid;
+        gap: 10px;
+        padding: 2rem 1rem;
+        max-width: fit-content;
+      }
+
+      .item {
+        display: grid;
+        gap: 5px;
+        grid-template-columns: fit-content(400px) fit-content(100px) auto;
+        align-items: center;
+        padding-left: 2rem;
+        gap: 20px;
+      }
+
+      .menu__title {
+        text-transform: capitalize;
+        font-size: 2rem;
+      }
+
+      .item__price {
+        display: none;
+      }
+
+      .item__title {
+        cursor: pointer;
+      }
+
+      .item__title:hover {
+        text-decoration: underline;
+      }
+
+      .item__title:hover + .item__price {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Categories</h1>
+    <ul class="menu"></ul>
+  </body>
+</html>
